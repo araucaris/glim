@@ -15,10 +15,10 @@ java {
 sourceSets {
     main {
         java.setSrcDirs(listOf("src"))
-        resources.setSrcDirs(emptyList<String>())
+        resources.setSrcDirs(listOf("res"))
     }
     test {
-        java.setSrcDirs(listOf("test"))
+        java.setSrcDirs(emptyList<String>())
         resources.setSrcDirs(emptyList<String>())
     }
 }

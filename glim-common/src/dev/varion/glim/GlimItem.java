@@ -37,11 +37,9 @@ public final class GlimItem {
     }
 
     final ItemStack newItemStack = itemStack.clone();
-    if (newItemStack.hasItemMeta()) {
-      final ItemMeta itemMeta = newItemStack.getItemMeta();
-      setNbt("glim", uniqueId.toString(), STRING).accept(itemMeta.getPersistentDataContainer());
-      newItemStack.setItemMeta(itemMeta);
-    }
+    final ItemMeta itemMeta = newItemStack.getItemMeta();
+    setNbt("glim", uniqueId.toString(), STRING).accept(itemMeta.getPersistentDataContainer());
+    newItemStack.setItemMeta(itemMeta);
     this.itemStack = newItemStack;
     return this;
   }

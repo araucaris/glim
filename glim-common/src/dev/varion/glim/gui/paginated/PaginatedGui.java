@@ -58,7 +58,11 @@ public final class PaginatedGui extends Gui {
 
   @Override
   public void update(final int slot, final ItemStack itemStack) {
-    if (!currentItemsBySlot.containsKey(slot)) return;
+    if (!currentItemsBySlot.containsKey(slot)) {
+      super.update(slot, itemStack);
+      return;
+    }
+
     final GlimItem item = currentItemsBySlot.get(slot);
     item.itemStack(itemStack);
     getInventory().setItem(slot, item.itemStack());
@@ -78,7 +82,11 @@ public final class PaginatedGui extends Gui {
 
   @Override
   public void remove(final GlimItem item) {
-    pageItems.remove(item);
+    final boolean removed = pageItems.remove(item);
+    if (!removed) {
+      super.remove(item);
+    }
+
     updatePage();
   }
 
@@ -91,7 +99,11 @@ public final class PaginatedGui extends Gui {
 
   @Override
   public GlimItem item(final int slot) {
-    return currentItemsBySlot.get(slot);
+    final GlimItem item = currentItemsBySlot.get(slot);
+    if (item == null) {
+      return super.item(slot);
+    }
+    return item;
   }
 
   @Override
@@ -172,28 +184,32 @@ public final class PaginatedGui extends Gui {
   }
 
   private void populatePage() {
-    int slot = 0;
-    final int inventorySize = getInventory().getSize();
-    for (final GlimItem glimItem : paginateItems(pageNum)) {
-      if (slot >= inventorySize) {
+    int slotIndex = 0;
+    int filledSlotCount = 0;
+    final int inventoryCapacity = getInventory().getSize();
+    final List<GlimItem> itemsToDisplay = paginateItems(pageNum);
+    int currentItemIndex = 0;
+
+    while (filledSlotCount < pageSize && currentItemIndex < itemsToDisplay.size()) {
+      if (slotIndex >= inventoryCapacity) {
         break;
       }
-
-      if (item(slot) != null || getInventory().getItem(slot) != null) {
-        slot++;
+      if (item(slotIndex) != null || getInventory().getItem(slotIndex) != null) {
+        slotIndex++;
         continue;
       }
-
-      currentItemsBySlot.put(slot, glimItem);
-      getInventory().setItem(slot, glimItem.itemStack());
-      slot++;
+      final GlimItem currentItem = itemsToDisplay.get(currentItemIndex);
+      currentItemsBySlot.put(slotIndex, currentItem);
+      getInventory().setItem(slotIndex, currentItem.itemStack());
+      slotIndex++;
+      filledSlotCount++;
+      currentItemIndex++;
     }
   }
 
   public void clearPage() {
-    for (final Map.Entry<Integer, GlimItem> entry : currentItemsBySlot.entrySet()) {
-      getInventory().setItem(entry.getKey(), null);
-    }
+    currentItemsBySlot.forEach((key, value) -> getInventory().setItem(key, null));
+    currentItemsBySlot.clear();
   }
 
   public void clearPageItems(final boolean update) {

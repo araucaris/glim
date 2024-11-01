@@ -62,10 +62,14 @@ public final class GuiController implements Listener {
       item = gui.item(event.getSlot());
     }
 
-    if (!isGuiItem(event.getCurrentItem(), item)) return;
+    if (!isGuiItem(event.getCurrentItem(), item)) {
+      return;
+    }
 
     final Consumer<InventoryClickEvent> itemAction = item.action();
-    if (Objects.nonNull(itemAction)) itemAction.accept(event);
+    if (Objects.nonNull(itemAction)) {
+      itemAction.accept(event);
+    }
   }
 
   @EventHandler
