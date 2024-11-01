@@ -115,10 +115,14 @@ public abstract class Gui implements InventoryHolder {
   }
 
   public void insert(final GlimItem... items) {
+    insert(List.of(items));
+  }
+
+  public void insert(final Collection<GlimItem> items) {
     insert(false, items);
   }
 
-  public void insert(final boolean expandIfFull, final GlimItem... items) {
+  public void insert(final boolean expandIfFull, final Collection<GlimItem> items) {
     final List<GlimItem> notAddedItems = new ArrayList<>();
 
     for (final GlimItem item : items) {
@@ -145,7 +149,7 @@ public abstract class Gui implements InventoryHolder {
     rows++;
     inventory = Bukkit.createInventory(this, rows * 9, title);
     update();
-    insert(true, notAddedItems.toArray(new GlimItem[0]));
+    insert(true, notAddedItems);
   }
 
   public void update(final int slot, final ItemStack itemStack) {

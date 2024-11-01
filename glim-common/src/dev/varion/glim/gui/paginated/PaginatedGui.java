@@ -6,7 +6,7 @@ import dev.varion.glim.GlimItem;
 import dev.varion.glim.gui.Gui;
 import dev.varion.glim.modifier.InteractionModifier;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,13 +44,9 @@ public final class PaginatedGui extends Gui {
     return this;
   }
 
-  public void insert(final GlimItem item) {
-    pageItems.add(item);
-  }
-
   @Override
-  public void insert(final GlimItem... items) {
-    pageItems.addAll(Arrays.asList(items));
+  public void insert(final boolean expandIfFull, final Collection<GlimItem> items) {
+    pageItems.addAll(items);
   }
 
   @Override
