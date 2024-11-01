@@ -115,7 +115,7 @@ public final class GuiController implements Listener {
       return false;
     }
 
-    final String nbt = GlimItemUtils.retrieveNbt(itemStack, "mf-gui", PersistentDataType.STRING);
+    final String nbt = GlimItemUtils.retrieveNbt(itemStack, "glim", PersistentDataType.STRING);
     if (nbt == null) {
       return false;
     }
