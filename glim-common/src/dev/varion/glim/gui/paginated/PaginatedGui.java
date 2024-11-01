@@ -1,6 +1,5 @@
 package dev.varion.glim.gui.paginated;
 
-import static dev.varion.glim.Glim.getSlotFromRowCol;
 import static java.util.Collections.unmodifiableMap;
 
 import dev.varion.glim.GlimItem;
@@ -12,9 +11,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.IntStream;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
@@ -23,8 +22,8 @@ import org.bukkit.inventory.ItemStack;
 
 public final class PaginatedGui extends Gui {
 
-  private final List<GlimItem> pageItems = new ArrayList<>();
-  private final Map<Integer, GlimItem> currentPage;
+  private final List<GlimItem> pageItems;
+  private final Map<Integer, GlimItem> currentItemsBySlot;
 
   private int pageSize;
   private int pageNum = 1;
@@ -36,8 +35,8 @@ public final class PaginatedGui extends Gui {
       final Set<InteractionModifier> interactionModifiers) {
     super(rows, title, interactionModifiers);
     this.pageSize = pageSize;
-    final int inventorySize = rows * 9;
-    currentPage = new LinkedHashMap<>(inventorySize);
+    pageItems = new ArrayList<>();
+    currentItemsBySlot = new LinkedHashMap<>(rows * 9);
   }
 
   public Gui pageSize(final int pageSize) {
@@ -58,82 +57,45 @@ public final class PaginatedGui extends Gui {
   public void update() {
     getInventory().clear();
     populateGui();
-
     updatePage();
   }
 
-  public void updatePageItem(final int slot, final ItemStack itemStack) {
-    if (!currentPage.containsKey(slot)) return;
-    final GlimItem item = currentPage.get(slot);
+  @Override
+  public void update(final int slot, final ItemStack itemStack) {
+    if (!currentItemsBySlot.containsKey(slot)) return;
+    final GlimItem item = currentItemsBySlot.get(slot);
     item.itemStack(itemStack);
     getInventory().setItem(slot, item.itemStack());
   }
 
-  public void updatePageItem(final int row, final int col, final ItemStack itemStack) {
-    updateItem(getSlotFromRowCol(row, col), itemStack);
-  }
+  @Override
+  public void update(final int slot, final GlimItem item) {
+    if (!currentItemsBySlot.containsKey(slot)) return;
 
-  public void updatePageItem(final int slot, final GlimItem item) {
-    if (!currentPage.containsKey(slot)) return;
+    final GlimItem oldItem = currentItemsBySlot.get(slot);
+    final int index = pageItems.indexOf(oldItem);
 
-    final GlimItem oldItem = currentPage.get(slot);
-    final int index = pageItems.indexOf(currentPage.get(slot));
-
-    currentPage.put(slot, item);
+    currentItemsBySlot.put(slot, item);
     pageItems.set(index, item);
     getInventory().setItem(slot, item.itemStack());
   }
 
-  public void updatePageItem(final int row, final int col, final GlimItem item) {
-    updateItem(getSlotFromRowCol(row, col), item);
-  }
-
-  public void removePageItem(final GlimItem item) {
+  @Override
+  public void remove(final GlimItem item) {
     pageItems.remove(item);
     updatePage();
   }
 
-  public void removePageItem(final ItemStack item) {
-    final Optional<GlimItem> guiItem =
-        pageItems.stream().filter(it -> it.itemStack().equals(item)).findFirst();
-    guiItem.ifPresent(this::removePageItem);
+  @Override
+  public void iterate(
+      final Predicate<Map.Entry<Integer, GlimItem>> predicate,
+      final Consumer<Map.Entry<Integer, GlimItem>> action) {
+    currentItemsBySlot.entrySet().stream().filter(predicate).forEach(action);
   }
 
   @Override
-  public void open(final HumanEntity player) {
-    open(player, 1);
-  }
-
-  public void open(final HumanEntity player, final int openPage) {
-    if (player.isSleeping()) return;
-    if (openPage <= getPagesNum() || openPage > 0) pageNum = openPage;
-
-    getInventory().clear();
-    currentPage.clear();
-
-    populateGui();
-
-    if (pageSize == 0) pageSize = calculatePageSize();
-
-    populatePage();
-
-    player.openInventory(getInventory());
-  }
-
-  public boolean next() {
-    if (pageNum + 1 > getPagesNum()) return false;
-
-    pageNum++;
-    updatePage();
-    return true;
-  }
-
-  public boolean previous() {
-    if (pageNum - 1 == 0) return false;
-
-    pageNum--;
-    updatePage();
-    return true;
+  public GlimItem item(final int slot) {
+    return currentItemsBySlot.get(slot);
   }
 
   @Override
@@ -153,18 +115,51 @@ public final class PaginatedGui extends Gui {
     return this;
   }
 
-  public int getNextPageNum() {
-    if (pageNum + 1 > getPagesNum()) return pageNum;
+  @Override
+  public void open(final HumanEntity player) {
+    open(player, 1);
+  }
+
+  public void open(final HumanEntity player, final int openPage) {
+    if (player.isSleeping()) return;
+    if (openPage <= pagesCount() || openPage > 0) pageNum = openPage;
+
+    getInventory().clear();
+    currentItemsBySlot.clear();
+
+    populateGui();
+
+    if (pageSize == 0) pageSize = calculatePageSize();
+
+    populatePage();
+
+    player.openInventory(getInventory());
+  }
+
+  public boolean next() {
+    if (pageNum + 1 > pagesCount()) return false;
+
+    pageNum++;
+    updatePage();
+    return true;
+  }
+
+  public boolean previous() {
+    if (pageNum - 1 == 0) return false;
+
+    pageNum--;
+    updatePage();
+    return true;
+  }
+
+  public int nextPageNum() {
+    if (pageNum + 1 > pagesCount()) return pageNum;
     return pageNum + 1;
   }
 
-  public int getPrevPageNum() {
+  public int previousPageNum() {
     if (pageNum - 1 == 0) return pageNum;
     return pageNum - 1;
-  }
-
-  public GlimItem pageItem(final int slot) {
-    return currentPage.get(slot);
   }
 
   public List<GlimItem> paginateItems(final int givenPage) {
@@ -173,12 +168,10 @@ public final class PaginatedGui extends Gui {
     int max = ((page * pageSize) + pageSize);
     if (max > pageItems.size()) max = pageItems.size();
 
-    return IntStream.range(page * pageSize, max)
-        .mapToObj(pageItems::get)
-        .collect(Collectors.toList());
+    return IntStream.range(page * pageSize, max).mapToObj(pageItems::get).toList();
   }
 
-  public int getPagesNum() {
+  public int pagesCount() {
     return (int) Math.ceil((double) pageItems.size() / pageSize);
   }
 
@@ -190,19 +183,19 @@ public final class PaginatedGui extends Gui {
         break;
       }
 
-      if (guiItem(slot) != null || getInventory().getItem(slot) != null) {
+      if (item(slot) != null || getInventory().getItem(slot) != null) {
         slot++;
         continue;
       }
 
-      currentPage.put(slot, glimItem);
+      currentItemsBySlot.put(slot, glimItem);
       getInventory().setItem(slot, glimItem.itemStack());
       slot++;
     }
   }
 
   public void clearPage() {
-    for (final Map.Entry<Integer, GlimItem> entry : currentPage.entrySet()) {
+    for (final Map.Entry<Integer, GlimItem> entry : currentItemsBySlot.entrySet()) {
       getInventory().setItem(entry.getKey(), null);
     }
   }
@@ -231,16 +224,12 @@ public final class PaginatedGui extends Gui {
     return counter;
   }
 
-  public Map<Integer, GlimItem> getCurrentPageItems() {
-    return unmodifiableMap(currentPage);
+  public Map<Integer, GlimItem> itemsBySlot() {
+    return unmodifiableMap(currentItemsBySlot);
   }
 
-  public List<GlimItem> getPageItems() {
+  public List<GlimItem> items() {
     return Collections.unmodifiableList(pageItems);
-  }
-
-  public int getCurrentPageNum() {
-    return pageNum;
   }
 
   public int pageSize() {
@@ -253,9 +242,5 @@ public final class PaginatedGui extends Gui {
 
   public void pageNum(final int pageNum) {
     this.pageNum = pageNum;
-  }
-
-  public Map<Integer, GlimItem> currentPageItems() {
-    return unmodifiableMap(currentPage);
   }
 }

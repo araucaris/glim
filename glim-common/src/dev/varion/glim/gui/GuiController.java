@@ -49,19 +49,19 @@ public final class GuiController implements Listener {
       defaultClick.accept(event);
     }
 
-    final Consumer<InventoryClickEvent> slotAction = gui.slotAction(event.getSlot());
+    final Consumer<InventoryClickEvent> slotAction = gui.action(event.getSlot());
     if (slotAction != null && event.getClickedInventory().getType() != InventoryType.PLAYER) {
       slotAction.accept(event);
     }
 
     GlimItem item;
     if (gui instanceof final PaginatedGui paginatedGui) {
-      item = paginatedGui.guiItem(event.getSlot());
+      item = paginatedGui.item(event.getSlot());
       if (item == null) {
-        item = paginatedGui.pageItem(event.getSlot());
+        item = paginatedGui.item(event.getSlot());
       }
     } else {
-      item = gui.guiItem(event.getSlot());
+      item = gui.item(event.getSlot());
     }
 
     if (!isGuiItem(event.getCurrentItem(), item)) {

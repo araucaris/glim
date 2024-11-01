@@ -32,8 +32,8 @@ import org.jetbrains.annotations.NotNull;
 public abstract class Gui implements InventoryHolder {
 
   private final GuiFiller filler;
-  private final Map<Integer, GlimItem> guiItems;
-  private final Map<Integer, Consumer<InventoryClickEvent>> slotActions;
+  private final Map<Integer, GlimItem> itemsBySlot;
+  private final Map<Integer, Consumer<InventoryClickEvent>> actionsBySlot;
   private final Set<InteractionModifier> interactionModifiers;
   private Inventory inventory;
   private Component title;
@@ -76,19 +76,19 @@ public abstract class Gui implements InventoryHolder {
         isChest
             ? Bukkit.createInventory(this, inventorySize, title)
             : Bukkit.createInventory(this, guiType.inventoryType(), title);
-    slotActions = new LinkedHashMap<>(inventorySize);
-    guiItems = new LinkedHashMap<>(inventorySize);
+    actionsBySlot = new LinkedHashMap<>(inventorySize);
+    itemsBySlot = new LinkedHashMap<>(inventorySize);
     filler = new GuiFiller(this);
   }
 
   public void set(final int slot, final GlimItem item) {
     validateSlot(slot);
-    guiItems.put(slot, item);
+    itemsBySlot.put(slot, item);
   }
 
   public void remove(final int slot) {
     validateSlot(slot);
-    guiItems.remove(slot);
+    itemsBySlot.remove(slot);
     inventory.setItem(slot, null);
   }
 
@@ -103,7 +103,7 @@ public abstract class Gui implements InventoryHolder {
   public void iterate(
       final Predicate<Map.Entry<Integer, GlimItem>> predicate,
       final Consumer<Map.Entry<Integer, GlimItem>> action) {
-    guiItems.entrySet().stream().filter(predicate).forEach(action);
+    itemsBySlot.entrySet().stream().filter(predicate).forEach(action);
   }
 
   public void set(final List<Integer> slots, final GlimItem item) {
@@ -123,14 +123,14 @@ public abstract class Gui implements InventoryHolder {
 
     for (final GlimItem item : items) {
       for (int slot = 0; slot < rows * 9; slot++) {
-        if (guiItems.get(slot) != null) {
+        if (itemsBySlot.get(slot) != null) {
           if (slot == rows * 9 - 1) {
             notAddedItems.add(item);
           }
           continue;
         }
 
-        guiItems.put(slot, item);
+        itemsBySlot.put(slot, item);
         break;
       }
     }
@@ -148,50 +148,50 @@ public abstract class Gui implements InventoryHolder {
     insert(true, notAddedItems.toArray(new GlimItem[0]));
   }
 
-  public void updateItem(final int slot, final ItemStack itemStack) {
-    final GlimItem item = guiItems.get(slot);
+  public void update(final int slot, final ItemStack itemStack) {
+    final GlimItem item = itemsBySlot.get(slot);
     if (item == null) {
-      updateItem(slot, new GlimItem(itemStack));
+      update(slot, new GlimItem(itemStack));
       return;
     }
 
     item.itemStack(itemStack);
-    updateItem(slot, item);
+    update(slot, item);
   }
 
-  public void updateItem(final int row, final int col, final ItemStack itemStack) {
-    updateItem(getSlotFromRowCol(row, col), itemStack);
+  public void update(final int row, final int col, final ItemStack itemStack) {
+    update(getSlotFromRowCol(row, col), itemStack);
   }
 
-  public void updateItem(final int slot, final GlimItem item) {
-    guiItems.put(slot, item);
+  public void update(final int slot, final GlimItem item) {
+    itemsBySlot.put(slot, item);
     inventory.setItem(slot, item.itemStack());
   }
 
-  public void updateItem(final int row, final int col, final GlimItem item) {
-    updateItem(getSlotFromRowCol(row, col), item);
+  public void update(final int row, final int col, final GlimItem item) {
+    update(getSlotFromRowCol(row, col), item);
   }
 
   public boolean contains(final int slot) {
-    return guiItems.containsKey(slot);
+    return itemsBySlot.containsKey(slot);
   }
 
-  public GlimItem guiItem(final int slot) {
-    return guiItems.get(slot);
+  public GlimItem item(final int slot) {
+    return itemsBySlot.get(slot);
   }
 
-  public void slotAction(final int slot, final Consumer<InventoryClickEvent> slotAction) {
+  public void action(final int slot, final Consumer<InventoryClickEvent> slotAction) {
     validateSlot(slot);
-    slotActions.put(slot, slotAction);
+    actionsBySlot.put(slot, slotAction);
   }
 
-  public void slotAction(
+  public void action(
       final int row, final int col, final Consumer<InventoryClickEvent> slotAction) {
-    slotAction(getSlotFromRowCol(row, col), slotAction);
+    action(getSlotFromRowCol(row, col), slotAction);
   }
 
-  public Consumer<InventoryClickEvent> slotAction(final int slot) {
-    return slotActions.get(slot);
+  public Consumer<InventoryClickEvent> action(final int slot) {
+    return actionsBySlot.get(slot);
   }
 
   public Gui disable(final InteractionModifier modifier) {
@@ -223,7 +223,7 @@ public abstract class Gui implements InventoryHolder {
   }
 
   public void populateGui() {
-    guiItems.forEach((key, value) -> inventory.setItem(key, value.itemStack()));
+    itemsBySlot.forEach((key, value) -> inventory.setItem(key, value.itemStack()));
   }
 
   public Gui updateTitle(final Component title) {
@@ -281,7 +281,7 @@ public abstract class Gui implements InventoryHolder {
   }
 
   public Map<Integer, Consumer<InventoryClickEvent>> slotActions() {
-    return slotActions;
+    return actionsBySlot;
   }
 
   public Set<InteractionModifier> interactionModifiers() {

@@ -35,7 +35,7 @@ public final class GuiFiller {
     final int rows = gui.rows();
     final List<GlimItem> items = repeatList(guiItems);
     for (int i = 9; i > 0; i--) {
-      if (gui.guiItem((rows * 9) - i) == null) {
+      if (gui.item((rows * 9) - i) == null) {
         gui.set((rows * 9) - i, items.get(i));
       }
     }
@@ -78,7 +78,7 @@ public final class GuiFiller {
 
     final List<GlimItem> items = repeatList(guiItems);
     for (int i = 0; i < fill; i++) {
-      if (gui.guiItem(i) == null) gui.set(i, items.get(i));
+      if (gui.item(i) == null) gui.set(i, items.get(i));
     }
   }
 
