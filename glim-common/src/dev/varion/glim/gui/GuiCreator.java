@@ -1,21 +1,23 @@
 package dev.varion.glim.gui;
 
-import dev.varion.glim.GlimException;
 import dev.varion.glim.modifier.InteractionModifier;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
-import java.util.function.Consumer;
 import net.kyori.adventure.text.Component;
 
 @SuppressWarnings("unchecked")
 public abstract class GuiCreator<G extends Gui, B extends GuiCreator<G, B>> {
 
-  private final EnumSet<InteractionModifier> interactionModifiers =
-      EnumSet.noneOf(InteractionModifier.class);
+  private final EnumSet<InteractionModifier> interactionModifiers;
   private Component title;
-  private int rows = 1;
-  private Consumer<G> consumer;
+  private int rows;
+
+  protected GuiCreator() {
+    interactionModifiers = EnumSet.noneOf(InteractionModifier.class);
+    title = Component.empty();
+    rows = 1;
+  }
 
   public B rows(final int rows) {
     this.rows = rows;
@@ -47,27 +49,14 @@ public abstract class GuiCreator<G extends Gui, B extends GuiCreator<G, B>> {
     return (B) this;
   }
 
-  public B apply(final Consumer<G> consumer) {
-    this.consumer = consumer;
-    return (B) this;
-  }
-
   public abstract G create();
 
   protected Component title() {
-    if (title == null) {
-      throw new GlimException("GUI title is missing!");
-    }
-
     return title;
   }
 
   protected int rows() {
     return rows;
-  }
-
-  protected Consumer<G> consumer() {
-    return consumer;
   }
 
   protected Set<InteractionModifier> modifiers() {

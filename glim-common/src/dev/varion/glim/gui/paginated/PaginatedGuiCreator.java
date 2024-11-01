@@ -1,7 +1,6 @@
 package dev.varion.glim.gui.paginated;
 
 import dev.varion.glim.gui.GuiCreator;
-import java.util.function.Consumer;
 
 public final class PaginatedGuiCreator extends GuiCreator<PaginatedGui, PaginatedGuiCreator> {
 
@@ -14,11 +13,6 @@ public final class PaginatedGuiCreator extends GuiCreator<PaginatedGui, Paginate
 
   @Override
   public PaginatedGui create() {
-    final PaginatedGui gui = new PaginatedGui(rows(), pageSize, title(), modifiers());
-
-    final Consumer<PaginatedGui> consumer = consumer();
-    if (consumer != null) consumer.accept(gui);
-
-    return gui;
+    return new PaginatedGui(rows(), pageSize, title(), modifiers());
   }
 }

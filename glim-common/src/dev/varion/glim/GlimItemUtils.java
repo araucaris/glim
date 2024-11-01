@@ -11,9 +11,7 @@ public final class GlimItemUtils {
 
   private static final JavaPlugin PLUGIN = JavaPlugin.getProvidingPlugin(Glim.class);
 
-  private GlimItemUtils() {
-
-  }
+  private GlimItemUtils() {}
 
   public static <K, T> void setNbt(
       final ItemStack itemStack,

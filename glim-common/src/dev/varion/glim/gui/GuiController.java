@@ -1,7 +1,10 @@
 package dev.varion.glim.gui;
 
+import static dev.varion.glim.GlimItemUtils.retrieveNbt;
+import static java.util.Optional.ofNullable;
+import static org.bukkit.event.inventory.InventoryType.*;
+
 import dev.varion.glim.GlimItem;
-import dev.varion.glim.GlimItemUtils;
 import dev.varion.glim.gui.paginated.PaginatedGui;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -11,7 +14,6 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -19,38 +21,33 @@ public final class GuiController implements Listener {
 
   @EventHandler
   public void onClick(final InventoryClickEvent event) {
-    if (!(event.getInventory().getHolder() instanceof final Gui gui)) {
-      return;
-    }
+    if (!(event.getInventory().getHolder() instanceof final Gui gui)) return;
 
     final Consumer<InventoryClickEvent> outsideClickAction = gui.outsideClickAction();
-    if (outsideClickAction != null && event.getClickedInventory() == null) {
+    if (Objects.nonNull(outsideClickAction) && Objects.isNull(event.getClickedInventory())) {
       outsideClickAction.accept(event);
       return;
     }
 
-    if (event.getClickedInventory() == null) {
-      return;
-    }
+    if (event.getClickedInventory() == null) return;
 
     final Consumer<InventoryClickEvent> defaultTopClick = gui.defaultTopClickAction();
-    if (defaultTopClick != null && event.getClickedInventory().getType() != InventoryType.PLAYER) {
+    if (Objects.nonNull(defaultTopClick)
+        && !Objects.equals(event.getClickedInventory().getType(), PLAYER))
       defaultTopClick.accept(event);
-    }
 
     final Consumer<InventoryClickEvent> playerInventoryClick = gui.playerInventoryAction();
-    if (playerInventoryClick != null
-        && event.getClickedInventory().getType() == InventoryType.PLAYER) {
+    if (Objects.nonNull(playerInventoryClick)
+        && Objects.equals(event.getClickedInventory().getType(), PLAYER)) {
       playerInventoryClick.accept(event);
     }
 
     final Consumer<InventoryClickEvent> defaultClick = gui.defaultClickAction();
-    if (defaultClick != null) {
-      defaultClick.accept(event);
-    }
+    if (Objects.nonNull(defaultClick)) defaultClick.accept(event);
 
     final Consumer<InventoryClickEvent> slotAction = gui.action(event.getSlot());
-    if (slotAction != null && event.getClickedInventory().getType() != InventoryType.PLAYER) {
+    if (Objects.nonNull(slotAction)
+        && !Objects.equals(event.getClickedInventory().getType(), PLAYER)) {
       slotAction.accept(event);
     }
 
@@ -64,61 +61,41 @@ public final class GuiController implements Listener {
       item = gui.item(event.getSlot());
     }
 
-    if (!isGuiItem(event.getCurrentItem(), item)) {
-      return;
-    }
+    if (!isGuiItem(event.getCurrentItem(), item)) return;
 
     final Consumer<InventoryClickEvent> itemAction = item.action();
-    if (itemAction != null) {
-      itemAction.accept(event);
-    }
+    if (Objects.nonNull(itemAction)) itemAction.accept(event);
   }
 
   @EventHandler
   public void onDrag(final InventoryDragEvent event) {
-    if (!(event.getInventory().getHolder() instanceof final Gui gui)) {
-      return;
-    }
+    if (!(event.getInventory().getHolder() instanceof final Gui gui)) return;
 
     final Consumer<InventoryDragEvent> dragAction = gui.dragAction();
-    if (dragAction != null) {
-      dragAction.accept(event);
-    }
+    if (Objects.nonNull(dragAction)) dragAction.accept(event);
   }
 
   @EventHandler
   public void onOpen(final InventoryOpenEvent event) {
-    if (!(event.getInventory().getHolder() instanceof final Gui gui)) {
-      return;
-    }
+    if (!(event.getInventory().getHolder() instanceof final Gui gui)) return;
 
     final Consumer<InventoryOpenEvent> openAction = gui.openGuiAction();
-    if (openAction != null && !gui.isBeingUpdated()) {
-      openAction.accept(event);
-    }
+    if (Objects.nonNull(openAction) && !gui.isBeingUpdated()) openAction.accept(event);
   }
 
   @EventHandler
   public void onClose(final InventoryCloseEvent event) {
-    if (!(event.getInventory().getHolder() instanceof final Gui gui)) {
-      return;
-    }
+    if (!(event.getInventory().getHolder() instanceof final Gui gui)) return;
 
     final Consumer<InventoryCloseEvent> closeAction = gui.closeGuiAction();
-    if (closeAction != null && !gui.isBeingUpdated()) {
-      closeAction.accept(event);
-    }
+    if (Objects.nonNull(closeAction) && !gui.isBeingUpdated()) closeAction.accept(event);
   }
 
   private boolean isGuiItem(final ItemStack itemStack, final GlimItem glimItem) {
-    if (itemStack == null || glimItem == null) {
-      return false;
-    }
+    if (Objects.isNull(itemStack) || Objects.isNull(glimItem)) return false;
 
-    final String nbt = GlimItemUtils.retrieveNbt(itemStack, "glim", PersistentDataType.STRING);
-    if (nbt == null) {
-      return false;
-    }
-    return Objects.equals(nbt, glimItem.uniqueId().toString());
+    return ofNullable(retrieveNbt(itemStack, "glim", PersistentDataType.STRING))
+        .filter(nbt -> Objects.equals(nbt, glimItem.uniqueId().toString()))
+        .isPresent();
   }
 }

@@ -1,5 +1,7 @@
 package dev.varion.glim.modifier;
 
+import static dev.varion.glim.modifier.InteractionModifier.*;
+
 import dev.varion.glim.gui.Gui;
 import java.util.EnumSet;
 import java.util.Set;
@@ -50,11 +52,11 @@ public final class InteractionModifierController implements Listener {
       return;
     }
 
-    if ((!gui.can(InteractionModifier.ITEM_PLACE) && isPlaceItemEvent(event))
-        || (!gui.can(InteractionModifier.ITEM_TAKE) && isTakeItemEvent(event))
-        || (!gui.can(InteractionModifier.ITEM_SWAP) && isSwapItemEvent(event))
-        || (!gui.can(InteractionModifier.ITEM_DROP) && isDropItemEvent(event))
-        || (!gui.can(InteractionModifier.OTHER_ACTIONS) && isOtherEvent(event))) {
+    if ((!gui.can(ITEM_PLACE) && isPlaceItemEvent(event))
+        || (!gui.can(ITEM_TAKE) && isTakeItemEvent(event))
+        || (!gui.can(ITEM_SWAP) && isSwapItemEvent(event))
+        || (!gui.can(ITEM_DROP) && isDropItemEvent(event))
+        || (!gui.can(OTHER_ACTIONS) && isOtherEvent(event))) {
       event.setCancelled(true);
       event.setResult(Event.Result.DENY);
     }
@@ -70,7 +72,7 @@ public final class InteractionModifierController implements Listener {
       return;
     }
 
-    if (gui.can(InteractionModifier.ITEM_PLACE) || !isDraggingOnGui(event)) return;
+    if (gui.can(ITEM_PLACE) || !isDraggingOnGui(event)) return;
 
     event.setCancelled(true);
     event.setResult(Event.Result.DENY);
@@ -86,11 +88,10 @@ public final class InteractionModifierController implements Listener {
       return false;
     }
 
-    return action == InventoryAction.MOVE_TO_OTHER_INVENTORY || isTakeAction(action);
+    return action == InventoryAction.MOVE_TO_OTHER_INVENTORY || ITEM_TAKE_ACTIONS.contains(action);
   }
 
   private boolean isPlaceItemEvent(final InventoryClickEvent event) {
-
     final Inventory inventory = event.getInventory();
     final Inventory clickedInventory = event.getClickedInventory();
     final InventoryAction action = event.getAction();
@@ -102,34 +103,31 @@ public final class InteractionModifierController implements Listener {
       return true;
     }
 
-    return isPlaceAction(action)
+    return ITEM_PLACE_ACTIONS.contains(action)
         && (clickedInventory == null || clickedInventory.getType() != InventoryType.PLAYER)
         && inventory.getType() != InventoryType.PLAYER;
   }
 
   private boolean isSwapItemEvent(final InventoryClickEvent event) {
-
     final Inventory inventory = event.getInventory();
     final Inventory clickedInventory = event.getClickedInventory();
     final InventoryAction action = event.getAction();
 
-    return isSwapAction(action)
+    return ITEM_SWAP_ACTIONS.contains(action)
         && (clickedInventory == null || clickedInventory.getType() != InventoryType.PLAYER)
         && inventory.getType() != InventoryType.PLAYER;
   }
 
   private boolean isDropItemEvent(final InventoryClickEvent event) {
-
     final Inventory inventory = event.getInventory();
     final Inventory clickedInventory = event.getClickedInventory();
     final InventoryAction action = event.getAction();
 
-    return isDropAction(action)
+    return ITEM_DROP_ACTIONS.contains(action)
         && (clickedInventory != null || inventory.getType() != InventoryType.PLAYER);
   }
 
   private boolean isOtherEvent(final InventoryClickEvent event) {
-
     final Inventory inventory = event.getInventory();
     final Inventory clickedInventory = event.getClickedInventory();
     final InventoryAction action = event.getAction();
@@ -141,22 +139,6 @@ public final class InteractionModifierController implements Listener {
   private boolean isDraggingOnGui(final InventoryDragEvent event) {
     final int topSlots = event.getView().getTopInventory().getSize();
     return event.getRawSlots().stream().anyMatch(slot -> slot < topSlots);
-  }
-
-  private boolean isTakeAction(final InventoryAction action) {
-    return ITEM_TAKE_ACTIONS.contains(action);
-  }
-
-  private boolean isPlaceAction(final InventoryAction action) {
-    return ITEM_PLACE_ACTIONS.contains(action);
-  }
-
-  private boolean isSwapAction(final InventoryAction action) {
-    return ITEM_SWAP_ACTIONS.contains(action);
-  }
-
-  private boolean isDropAction(final InventoryAction action) {
-    return ITEM_DROP_ACTIONS.contains(action);
   }
 
   private boolean isOtherAction(final InventoryAction action) {
