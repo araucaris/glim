@@ -13,7 +13,7 @@ maven("https://repo.varion.dev/snapshots")
 **Core:**
 
 ```kotlin
-implementation("dev.varion.glim:glim-common:1.0-SNAPSHOT")
+implementation("dev.varion.glim:glim-common:1.0.1-SNAPSHOT")
 ```
 
 ---
