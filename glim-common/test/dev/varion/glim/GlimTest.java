@@ -12,7 +12,7 @@ public final class GlimTest {
   private GlimTest() {}
 
   public static void main(final String[] args) {
-    final Glim glim = Glim.create();
+    final Glim glim = Glim.create(null);
     final SimpleGui gui =
         glim.creator()
             .title(Component.text("test"))

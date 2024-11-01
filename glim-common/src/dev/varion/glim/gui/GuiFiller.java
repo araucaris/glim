@@ -1,6 +1,6 @@
 package dev.varion.glim.gui;
 
-import static dev.varion.glim.Glim.getSlotFromRowCol;
+import static dev.varion.glim.gui.GuiUtils.getSlotFromRowCol;
 
 import dev.varion.glim.GlimItem;
 import dev.varion.glim.gui.paginated.PaginatedGui;

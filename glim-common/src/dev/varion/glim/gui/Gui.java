@@ -1,6 +1,6 @@
 package dev.varion.glim.gui;
 
-import static dev.varion.glim.Glim.getSlotFromRowCol;
+import static dev.varion.glim.gui.GuiUtils.getSlotFromRowCol;
 import static java.util.Collections.unmodifiableCollection;
 
 import dev.varion.glim.GlimException;
@@ -185,8 +185,7 @@ public abstract class Gui implements InventoryHolder {
     actionsBySlot.put(slot, slotAction);
   }
 
-  public void action(
-      final int row, final int col, final Consumer<InventoryClickEvent> slotAction) {
+  public void action(final int row, final int col, final Consumer<InventoryClickEvent> slotAction) {
     action(getSlotFromRowCol(row, col), slotAction);
   }
 

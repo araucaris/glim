@@ -1,7 +1,7 @@
 package dev.varion.glim.gui;
 
-import dev.varion.glim.Glim;
 import dev.varion.glim.GlimItem;
+import dev.varion.glim.GlimItemUtils;
 import dev.varion.glim.gui.paginated.PaginatedGui;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -115,7 +115,7 @@ public final class GuiController implements Listener {
       return false;
     }
 
-    final String nbt = Glim.retrieveNbt(itemStack, "mf-gui", PersistentDataType.STRING);
+    final String nbt = GlimItemUtils.retrieveNbt(itemStack, "mf-gui", PersistentDataType.STRING);
     if (nbt == null) {
       return false;
     }

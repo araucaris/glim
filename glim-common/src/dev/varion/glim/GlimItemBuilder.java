@@ -1,6 +1,7 @@
 package dev.varion.glim;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
+import dev.varion.glim.gui.GuiUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -50,7 +51,7 @@ public class GlimItemBuilder {
   }
 
   public GlimItemBuilder name(final Component name) {
-    if (Objects.isNull(meta )) return this;
+    if (Objects.isNull(meta)) return this;
     meta.displayName(name);
     return this;
   }
@@ -152,14 +153,14 @@ public class GlimItemBuilder {
   public <K, T> GlimItemBuilder setNbt(
       final String key, final T value, final PersistentDataType<K, T> dataType) {
     itemStack.setItemMeta(meta);
-    Glim.setNbt(itemStack, key, value, dataType);
+    GlimItemUtils.setNbt(itemStack, key, value, dataType);
     meta = itemStack.getItemMeta();
     return this;
   }
 
   public GlimItemBuilder removeNbt(final String key) {
     itemStack.setItemMeta(meta);
-    Glim.removeNbt(itemStack, key);
+    GlimItemUtils.removeNbt(itemStack, key);
     meta = itemStack.getItemMeta();
     return this;
   }
@@ -169,7 +170,7 @@ public class GlimItemBuilder {
       return this;
     }
 
-    final String textureUrl = Glim.getSkinUrl(texture);
+    final String textureUrl = GuiUtils.getSkinUrl(texture);
     if (Objects.isNull(textureUrl)) {
       return this;
     }

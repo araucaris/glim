@@ -34,7 +34,7 @@ public final class GlimItem {
     }
 
     final ItemStack newItemStack = itemStack.clone();
-    Glim.setNbt(newItemStack, "glim", uniqueId.toString(), PersistentDataType.STRING);
+    GlimItemUtils.setNbt(newItemStack, "glim", uniqueId.toString(), PersistentDataType.STRING);
     this.itemStack = newItemStack;
     return this;
   }
