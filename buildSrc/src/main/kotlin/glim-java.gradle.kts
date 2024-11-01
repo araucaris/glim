@@ -18,7 +18,7 @@ sourceSets {
         resources.setSrcDirs(emptyList<String>())
     }
     test {
-        java.setSrcDirs(emptyList<String>())
+        java.setSrcDirs(listOf("test"))
         resources.setSrcDirs(emptyList<String>())
     }
 }
