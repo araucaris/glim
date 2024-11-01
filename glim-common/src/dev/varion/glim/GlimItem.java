@@ -27,15 +27,16 @@ public final class GlimItem {
     return itemStack;
   }
 
-  public void itemStack(final ItemStack itemStack) {
-    if ( Objects.isNull(itemStack) || itemStack.getType().isAir()) {
+  public GlimItem itemStack(final ItemStack itemStack) {
+    if (Objects.isNull(itemStack) || itemStack.getType().isAir()) {
       this.itemStack = new ItemStack(Material.AIR);
-      return;
+      return this;
     }
 
     final ItemStack newItemStack = itemStack.clone();
     Glim.setNbt(newItemStack, "glim", uniqueId.toString(), PersistentDataType.STRING);
     this.itemStack = newItemStack;
+    return this;
   }
 
   public UUID uniqueId() {
@@ -46,7 +47,8 @@ public final class GlimItem {
     return action;
   }
 
-  public void action(final Consumer<InventoryClickEvent> action) {
+  public GlimItem action(final Consumer<InventoryClickEvent> action) {
     this.action = action;
+    return this;
   }
 }
