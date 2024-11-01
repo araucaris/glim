@@ -28,7 +28,7 @@ import org.bukkit.profile.PlayerTextures;
 public class GlimItemBuilder {
 
   private final ItemStack itemStack;
-  private ItemMeta meta;
+  private final ItemMeta meta;
 
   GlimItemBuilder(final ItemStack itemStack) {
     this.itemStack = itemStack;
@@ -153,14 +153,14 @@ public class GlimItemBuilder {
 
   public <K, T> GlimItemBuilder setNbt(
       final String key, final T value, final PersistentDataType<K, T> dataType) {
-    return pdc(pdc -> GlimItemUtils.setNbt(key, value, dataType).accept(pdc));
+    return pdc(GlimItemUtils.setNbt(key, value, dataType));
   }
 
   public GlimItemBuilder removeNbt(final String key) {
-    return pdc(pdc -> GlimItemUtils.removeNbt(key).accept(pdc));
+    return pdc(GlimItemUtils.removeNbt(key));
   }
 
-  public GlimItemBuilder texture(final String texture, final UUID profileId) {
+  public GlimItemBuilder texture(final String texture, final UUID uniqueId) {
     if (!Objects.equals(itemStack.getType(), Material.PLAYER_HEAD)) {
       return this;
     }
@@ -171,7 +171,7 @@ public class GlimItemBuilder {
     }
 
     final SkullMeta skullMeta = (SkullMeta) meta;
-    final PlayerProfile profile = Bukkit.createProfile(profileId, "");
+    final PlayerProfile profile = Bukkit.createProfile(uniqueId, "");
     final PlayerTextures textures = profile.getTextures();
 
     try {

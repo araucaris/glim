@@ -1,10 +1,14 @@
 package dev.varion.glim.gui;
 
 import static dev.varion.glim.gui.GuiUtils.getSlotFromRowCol;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
+import static java.util.Collections.nCopies;
 
+import dev.varion.glim.GlimException;
 import dev.varion.glim.GlimItem;
 import dev.varion.glim.gui.paginated.PaginatedGui;
-import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -23,7 +27,10 @@ public final class GuiFiller {
   public void fillTop(final List<GlimItem> guiItems) {
     final List<GlimItem> items = repeatList(guiItems);
     for (int i = 0; i < 9; i++) {
-      if (!gui.contains(i)) gui.set(i, items.get(i));
+      if (!gui.contains(i)) {
+        final GlimItem item = items.get(i);
+        gui.set(i, item);
+      }
     }
   }
 
@@ -36,7 +43,8 @@ public final class GuiFiller {
     final List<GlimItem> items = repeatList(guiItems);
     for (int i = 9; i > 0; i--) {
       if (gui.item((rows * 9) - i) == null) {
-        gui.set((rows * 9) - i, items.get(i));
+        final GlimItem item = items.get(i);
+        gui.set((rows * 9) - i, item);
       }
     }
   }
@@ -50,7 +58,6 @@ public final class GuiFiller {
     if (rows <= 2) return;
 
     final List<GlimItem> items = repeatList(guiItems);
-
     for (int i = 0; i < rows * 9; i++) {
       if ((i <= 8) || (i >= (rows * 9) - 8) && (i <= (rows * 9) - 2) || i % 9 == 0 || i % 9 == 8)
         gui.set(i, items.get(i));
@@ -63,8 +70,7 @@ public final class GuiFiller {
 
   public void fill(final List<GlimItem> guiItems) {
     if (gui instanceof PaginatedGui) {
-      throw new dev.varion.glim.GlimException(
-          "Full filling a GUI is not supported in a Paginated GUI!");
+      throw new GlimException("Filling a paginated gui is not supported!");
     }
 
     final GuiType type = gui.guiType();
@@ -94,9 +100,7 @@ public final class GuiFiller {
   }
 
   private List<GlimItem> repeatList(final List<GlimItem> items) {
-    final List<GlimItem> repeated = new ArrayList<>();
-    Collections.nCopies(gui.rows() * 9, items).forEach(repeated::addAll);
-    return repeated;
+    return nCopies(gui.rows() * 9, items).stream().flatMap(Collection::stream).toList();
   }
 
   public void fillBetweenPoints(
@@ -110,10 +114,10 @@ public final class GuiFiller {
       final int rowTo,
       final int colTo,
       final List<GlimItem> guiItems) {
-    final int minRow = Math.min(rowFrom, rowTo);
-    final int maxRow = Math.max(rowFrom, rowTo);
-    final int minCol = Math.min(colFrom, colTo);
-    final int maxCol = Math.max(colFrom, colTo);
+    final int minRow = min(rowFrom, rowTo);
+    final int maxRow = max(rowFrom, rowTo);
+    final int minCol = min(colFrom, colTo);
+    final int maxCol = max(colFrom, colTo);
 
     final int rows = gui.rows();
     final List<GlimItem> items = repeatList(guiItems);
