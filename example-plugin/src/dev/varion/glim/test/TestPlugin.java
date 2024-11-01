@@ -28,7 +28,7 @@ public final class TestPlugin extends JavaPlugin {
                     glim.paginatedCreator()
                         .title(
                             miniMessage()
-                                .deserialize("</red>example title</red>")
+                                .deserialize("<red>example title</red>")
                                 .decoration(TextDecoration.ITALIC, false))
                         .rows(5)
                         .pageSize(21)
