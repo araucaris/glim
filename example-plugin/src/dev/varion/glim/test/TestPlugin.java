@@ -4,7 +4,7 @@ import static net.kyori.adventure.text.minimessage.MiniMessage.miniMessage;
 
 import dev.varion.glim.Glim;
 import dev.varion.glim.GlimItemBuilder;
-import dev.varion.glim.gui.paginated.PaginatedGui;
+import dev.varion.glim.gui.SimpleGui;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Material;
@@ -24,14 +24,13 @@ public final class TestPlugin extends JavaPlugin {
             new Listener() {
               @EventHandler
               public void onPlayerCommandPreprocess(final PlayerCommandPreprocessEvent event) {
-                final PaginatedGui gui =
-                    glim.paginatedCreator()
+                final SimpleGui gui =
+                    glim.creator()
                         .title(
                             miniMessage()
                                 .deserialize("<red>example title</red>")
                                 .decoration(TextDecoration.ITALIC, false))
                         .rows(5)
-                        .pageSize(21)
                         .disableAllInteractions()
                         .create();
                 gui.filler()
@@ -42,22 +41,7 @@ public final class TestPlugin extends JavaPlugin {
                     GlimItemBuilder.from(Material.STONE_BUTTON)
                         .asGlim(
                             click ->
-                                click.getWhoClicked().sendMessage(Component.text(gui.previous()))));
-                gui.set(
-                    5,
-                    7,
-                    GlimItemBuilder.from(Material.STONE_BUTTON)
-                        .asGlim(
-                            click ->
-                                click.getWhoClicked().sendMessage(Component.text(gui.next()))));
-                for (int i = 0; i < 320; i++) {
-                  final int itemIndex = i;
-                  gui.insert(
-                      GlimItemBuilder.from(Material.COBBLESTONE)
-                          .asGlim(
-                              click ->
-                                  click.getWhoClicked().sendMessage("hello from " + itemIndex)));
-                }
+                                click.getWhoClicked().sendMessage(Component.text("hello"))));
                 gui.open(event.getPlayer());
               }
             },
