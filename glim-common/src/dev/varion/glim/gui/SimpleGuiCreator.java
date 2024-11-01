@@ -15,12 +15,8 @@ public final class SimpleGuiCreator extends GuiCreator<SimpleGui, SimpleGuiCreat
 
   @Override
   public SimpleGui create() {
-    final SimpleGui gui;
-    if (guiType == null || guiType == GuiType.CHEST) {
-      gui = new SimpleGui(rows(), title(), modifiers());
-    } else {
-      gui = new SimpleGui(guiType, title(), modifiers());
-    }
-    return gui;
+    return guiType == null || guiType == GuiType.CHEST
+        ? new SimpleGui(rows(), title(), modifiers())
+        : new SimpleGui(guiType, title(), modifiers());
   }
 }
