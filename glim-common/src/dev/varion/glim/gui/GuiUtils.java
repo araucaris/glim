@@ -16,20 +16,22 @@ public final class GuiUtils {
   private GuiUtils() {}
 
   public static String getSkinUrl(final String texture) {
-    final String decoded = new String(Base64.getDecoder().decode(texture), StandardCharsets.UTF_8);
-    final JsonObject object = GSON.fromJson(decoded, JsonObject.class);
-
-    final JsonElement textures = object.get("textures");
-    if (Objects.isNull(textures)) {
+    final String rawTexture =
+        new String(Base64.getDecoder().decode(texture), StandardCharsets.UTF_8);
+    final JsonObject textureJson = GSON.fromJson(rawTexture, JsonObject.class);
+    final JsonElement textureElement = textureJson.get("textures");
+    if (Objects.isNull(textureElement)) {
       return null;
     }
 
-    final JsonElement skin = textures.getAsJsonObject().get("SKIN");
-    if (Objects.isNull(skin)) {
+    final JsonElement skinElement = textureElement.getAsJsonObject().get("SKIN");
+    if (Objects.isNull(skinElement)) {
       return null;
     }
 
-    return ofNullable(skin.getAsJsonObject().get("url")).map(JsonElement::getAsString).orElse(null);
+    return ofNullable(skinElement.getAsJsonObject().get("url"))
+        .map(JsonElement::getAsString)
+        .orElse(null);
   }
 
   public static int getSlotFromRowCol(final int row, final int col) {

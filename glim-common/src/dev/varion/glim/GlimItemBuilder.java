@@ -141,6 +141,7 @@ public class GlimItemBuilder {
   }
 
   public GlimItemBuilder pdc(final Consumer<PersistentDataContainer> consumer) {
+    itemStack.setItemMeta(meta);
     consumer.accept(meta.getPersistentDataContainer());
     return this;
   }
@@ -152,17 +153,11 @@ public class GlimItemBuilder {
 
   public <K, T> GlimItemBuilder setNbt(
       final String key, final T value, final PersistentDataType<K, T> dataType) {
-    itemStack.setItemMeta(meta);
-    GlimItemUtils.setNbt(itemStack, key, value, dataType);
-    meta = itemStack.getItemMeta();
-    return this;
+    return pdc(pdc -> GlimItemUtils.setNbt(key, value, dataType).accept(pdc));
   }
 
   public GlimItemBuilder removeNbt(final String key) {
-    itemStack.setItemMeta(meta);
-    GlimItemUtils.removeNbt(itemStack, key);
-    meta = itemStack.getItemMeta();
-    return this;
+    return pdc(pdc -> GlimItemUtils.removeNbt(key).accept(pdc));
   }
 
   public GlimItemBuilder texture(final String texture, final UUID profileId) {

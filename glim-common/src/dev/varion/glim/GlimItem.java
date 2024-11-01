@@ -1,12 +1,15 @@
 package dev.varion.glim;
 
+import static dev.varion.glim.GlimItemUtils.setNbt;
+import static org.bukkit.persistence.PersistentDataType.STRING;
+
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.inventory.meta.ItemMeta;
 
 public final class GlimItem {
 
@@ -34,7 +37,11 @@ public final class GlimItem {
     }
 
     final ItemStack newItemStack = itemStack.clone();
-    GlimItemUtils.setNbt(newItemStack, "glim", uniqueId.toString(), PersistentDataType.STRING);
+    if (newItemStack.hasItemMeta()) {
+      final ItemMeta itemMeta = newItemStack.getItemMeta();
+      setNbt("glim", uniqueId.toString(), STRING).accept(itemMeta.getPersistentDataContainer());
+      newItemStack.setItemMeta(itemMeta);
+    }
     this.itemStack = newItemStack;
     return this;
   }

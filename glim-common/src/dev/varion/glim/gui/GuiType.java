@@ -9,16 +9,16 @@ public enum GuiType {
   DISPENSER(InventoryType.DISPENSER, 8),
   BREWING(InventoryType.BREWING, 4);
 
-  private final InventoryType inventoryType;
+  private final InventoryType type;
   private final int limit;
 
-  GuiType(final InventoryType inventoryType, final int limit) {
-    this.inventoryType = inventoryType;
+  GuiType(final InventoryType type, final int limit) {
+    this.type = type;
     this.limit = limit;
   }
 
   public InventoryType inventoryType() {
-    return inventoryType;
+    return type;
   }
 
   public int limit() {

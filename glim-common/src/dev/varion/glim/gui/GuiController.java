@@ -2,7 +2,8 @@ package dev.varion.glim.gui;
 
 import static dev.varion.glim.GlimItemUtils.retrieveNbt;
 import static java.util.Optional.ofNullable;
-import static org.bukkit.event.inventory.InventoryType.*;
+import static org.bukkit.event.inventory.InventoryType.PLAYER;
+import static org.bukkit.persistence.PersistentDataType.STRING;
 
 import dev.varion.glim.GlimItem;
 import dev.varion.glim.gui.paginated.PaginatedGui;
@@ -15,7 +16,6 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataType;
 
 public final class GuiController implements Listener {
 
@@ -33,8 +33,9 @@ public final class GuiController implements Listener {
 
     final Consumer<InventoryClickEvent> defaultTopClick = gui.defaultTopClickAction();
     if (Objects.nonNull(defaultTopClick)
-        && !Objects.equals(event.getClickedInventory().getType(), PLAYER))
+        && !Objects.equals(event.getClickedInventory().getType(), PLAYER)) {
       defaultTopClick.accept(event);
+    }
 
     final Consumer<InventoryClickEvent> playerInventoryClick = gui.playerInventoryAction();
     if (Objects.nonNull(playerInventoryClick)
@@ -93,8 +94,11 @@ public final class GuiController implements Listener {
 
   private boolean isGuiItem(final ItemStack itemStack, final GlimItem glimItem) {
     if (Objects.isNull(itemStack) || Objects.isNull(glimItem)) return false;
-
-    return ofNullable(retrieveNbt(itemStack, "glim", PersistentDataType.STRING))
+    if (!itemStack.hasItemMeta()) {
+      return false;
+    }
+    return ofNullable(
+            retrieveNbt("glim", STRING).apply(itemStack.getItemMeta().getPersistentDataContainer()))
         .filter(nbt -> Objects.equals(nbt, glimItem.uniqueId().toString()))
         .isPresent();
   }

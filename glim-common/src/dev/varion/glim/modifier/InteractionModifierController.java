@@ -1,6 +1,10 @@
 package dev.varion.glim.modifier;
 
-import static dev.varion.glim.modifier.InteractionModifier.*;
+import static dev.varion.glim.modifier.InteractionModifier.ITEM_DROP;
+import static dev.varion.glim.modifier.InteractionModifier.ITEM_PLACE;
+import static dev.varion.glim.modifier.InteractionModifier.ITEM_SWAP;
+import static dev.varion.glim.modifier.InteractionModifier.ITEM_TAKE;
+import static dev.varion.glim.modifier.InteractionModifier.OTHER_ACTIONS;
 
 import dev.varion.glim.gui.Gui;
 import java.util.EnumSet;
