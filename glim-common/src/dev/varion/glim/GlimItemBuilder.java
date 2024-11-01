@@ -25,34 +25,36 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.profile.PlayerTextures;
 
-public class GlimItemBuilder {
+public final class GlimItemBuilder {
 
+  private static final String DEFAULT_PROFILE_NAME = "";
   private final ItemStack itemStack;
-  private final ItemMeta meta;
+  private final ItemMeta itemMeta;
 
-  GlimItemBuilder(final ItemStack itemStack) {
+  private GlimItemBuilder(final ItemStack itemStack) {
     this.itemStack = itemStack;
-    meta =
+    itemMeta =
         itemStack.hasItemMeta()
             ? itemStack.getItemMeta()
             : Bukkit.getItemFactory().getItemMeta(itemStack.getType());
   }
 
-  public static GlimItemBuilder of(final ItemStack itemStack) {
+  public static GlimItemBuilder from(final ItemStack itemStack) {
     return new GlimItemBuilder(itemStack);
   }
 
-  public static GlimItemBuilder of(final Material material) {
+  public static GlimItemBuilder from(final Material material) {
     return new GlimItemBuilder(new ItemStack(material));
   }
 
   public static GlimItemBuilder skull() {
-    return of(Material.PLAYER_HEAD);
+    return from(Material.PLAYER_HEAD);
   }
 
   public GlimItemBuilder name(final Component name) {
-    if (Objects.isNull(meta)) return this;
-    meta.displayName(name);
+    if (Objects.nonNull(itemMeta)) {
+      itemMeta.displayName(name);
+    }
     return this;
   }
 
@@ -66,21 +68,24 @@ public class GlimItemBuilder {
   }
 
   public GlimItemBuilder lore(final List<Component> lore) {
-    if (Objects.isNull(meta)) return this;
-    meta.lore(lore);
+    if (Objects.nonNull(itemMeta)) {
+      itemMeta.lore(lore);
+    }
     return this;
   }
 
   public GlimItemBuilder lore(final Consumer<List<Component>> mutator) {
-    if (Objects.isNull(meta)) return this;
-    final List<Component> itemLore = meta.hasLore() ? meta.lore() : new ArrayList<>();
-    mutator.accept(itemLore);
-    return lore(itemLore);
+    if (Objects.nonNull(itemMeta)) {
+      final List<Component> itemLore = itemMeta.hasLore() ? itemMeta.lore() : new ArrayList<>();
+      mutator.accept(itemLore);
+      return lore(itemLore);
+    }
+    return this;
   }
 
   public GlimItemBuilder enchant(
       final Enchantment enchantment, final int level, final boolean ignoreLevelRestriction) {
-    meta.addEnchant(enchantment, level, ignoreLevelRestriction);
+    itemMeta.addEnchant(enchantment, level, ignoreLevelRestriction);
     return this;
   }
 
@@ -103,13 +108,13 @@ public class GlimItemBuilder {
     return enchant(enchantments, true);
   }
 
-  public GlimItemBuilder disenchant(final Enchantment enchantment) {
+  public GlimItemBuilder removeEnchant(final Enchantment enchantment) {
     itemStack.removeEnchantment(enchantment);
     return this;
   }
 
   public GlimItemBuilder flags(final ItemFlag... flags) {
-    meta.addItemFlags(flags);
+    itemMeta.addItemFlags(flags);
     return this;
   }
 
@@ -118,7 +123,7 @@ public class GlimItemBuilder {
   }
 
   public GlimItemBuilder unbreakable(final boolean unbreakable) {
-    meta.setUnbreakable(unbreakable);
+    itemMeta.setUnbreakable(unbreakable);
     return this;
   }
 
@@ -128,26 +133,22 @@ public class GlimItemBuilder {
 
   public GlimItemBuilder glow(final boolean glow) {
     if (glow) {
-      meta.addEnchant(Enchantment.LURE, 1, false);
-      meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-      return this;
+      itemMeta.addEnchant(Enchantment.LURE, 1, false);
+      itemMeta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+    } else {
+      itemMeta.getEnchants().keySet().forEach(itemMeta::removeEnchant);
     }
-
-    for (final Enchantment enchantment : meta.getEnchants().keySet()) {
-      meta.removeEnchant(enchantment);
-    }
-
     return this;
   }
 
-  public GlimItemBuilder pdc(final Consumer<PersistentDataContainer> consumer) {
-    itemStack.setItemMeta(meta);
-    consumer.accept(meta.getPersistentDataContainer());
+  public GlimItemBuilder pdc(final Consumer<PersistentDataContainer> dataUpdater) {
+    itemStack.setItemMeta(itemMeta);
+    dataUpdater.accept(itemMeta.getPersistentDataContainer());
     return this;
   }
 
-  public GlimItemBuilder model(final int modelData) {
-    meta.setCustomModelData(modelData);
+  public GlimItemBuilder customModelData(final int modelData) {
+    itemMeta.setCustomModelData(modelData);
     return this;
   }
 
@@ -161,28 +162,9 @@ public class GlimItemBuilder {
   }
 
   public GlimItemBuilder texture(final String texture, final UUID uniqueId) {
-    if (!Objects.equals(itemStack.getType(), Material.PLAYER_HEAD)) {
-      return this;
+    if (Objects.equals(itemStack.getType(), Material.PLAYER_HEAD)) {
+      applyTexture(texture, uniqueId);
     }
-
-    final String textureUrl = GuiUtils.getSkinUrl(texture);
-    if (Objects.isNull(textureUrl)) {
-      return this;
-    }
-
-    final SkullMeta skullMeta = (SkullMeta) meta;
-    final PlayerProfile profile = Bukkit.createProfile(uniqueId, "");
-    final PlayerTextures textures = profile.getTextures();
-
-    try {
-      textures.setSkin(new URL(textureUrl));
-    } catch (final MalformedURLException exception) {
-      exception.printStackTrace();
-      return this;
-    }
-
-    profile.setTextures(textures);
-    skullMeta.setPlayerProfile(profile);
     return this;
   }
 
@@ -191,15 +173,14 @@ public class GlimItemBuilder {
   }
 
   public GlimItemBuilder owner(final OfflinePlayer player) {
-    if (!Objects.equals(itemStack.getType(), Material.PLAYER_HEAD)) return this;
-
-    final SkullMeta skullMeta = (SkullMeta) meta;
-    skullMeta.setOwningPlayer(player);
+    if (Objects.equals(itemStack.getType(), Material.PLAYER_HEAD)) {
+      ((SkullMeta) itemMeta).setOwningPlayer(player);
+    }
     return this;
   }
 
   public ItemStack asItemStack() {
-    itemStack.setItemMeta(meta);
+    itemStack.setItemMeta(itemMeta);
     return itemStack;
   }
 
@@ -209,5 +190,22 @@ public class GlimItemBuilder {
 
   public GlimItem asGlim(final Consumer<InventoryClickEvent> action) {
     return new GlimItem(asItemStack(), action);
+  }
+
+  @SuppressWarnings("CallToPrintStackTrace")
+  private void applyTexture(final String texture, final UUID uniqueId) {
+    final String textureUrl = GuiUtils.getSkinUrl(texture);
+    if (textureUrl != null) {
+      final SkullMeta skullMeta = (SkullMeta) itemMeta;
+      final PlayerProfile profile = Bukkit.createProfile(uniqueId, DEFAULT_PROFILE_NAME);
+      final PlayerTextures textures = profile.getTextures();
+      try {
+        textures.setSkin(new URL(textureUrl));
+      } catch (final MalformedURLException exception) {
+        exception.printStackTrace();
+      }
+      profile.setTextures(textures);
+      skullMeta.setPlayerProfile(profile);
+    }
   }
 }

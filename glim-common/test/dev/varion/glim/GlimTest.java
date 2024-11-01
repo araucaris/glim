@@ -21,7 +21,7 @@ public final class GlimTest {
             .enable(InteractionModifier.ITEM_DROP)
             .create();
     gui.insert(
-        GlimItemBuilder.of(Material.ACACIA_BUTTON)
+        GlimItemBuilder.from(Material.ACACIA_BUTTON)
             .name(Component.text("button"))
             .asGlim(event -> event.getWhoClicked().sendMessage(Component.text("click"))));
     gui.open(null);
