@@ -188,7 +188,6 @@ public class GlimItemBuilder {
 
     profile.setTextures(textures);
     skullMeta.setPlayerProfile(profile);
-    meta = skullMeta;
     return this;
   }
 
