@@ -1,7 +1,5 @@
 package dev.varion.glim.gui;
 
-import java.util.function.Consumer;
-
 public final class SimpleGuiCreator extends GuiCreator<SimpleGui, SimpleGuiCreator> {
 
   private GuiType guiType;
@@ -23,10 +21,6 @@ public final class SimpleGuiCreator extends GuiCreator<SimpleGui, SimpleGuiCreat
     } else {
       gui = new SimpleGui(guiType, title(), modifiers());
     }
-
-    final Consumer<SimpleGui> consumer = consumer();
-    if (consumer != null) consumer.accept(gui);
-
     return gui;
   }
 }
